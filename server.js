@@ -8,6 +8,9 @@ const cors = require("cors");
 const courseRoute = require("./routes/courseroute");
 const authRoute = require("./routes/authroute");
 const userRoute = require("./routes/userroute");
+const taskRoute = require("./routes/taskroute");
+const projectRoute = require("./routes/projectroute");
+const teamRoute = require("./routes/teamroute");
 
 // Initialize Express application
 const App = express();
@@ -20,6 +23,9 @@ App.use(cors()); // Middleware for Cross-Origin Resource Sharing
 App.use("/course", courseRoute); //getting all courses here
 App.use("/auth", authRoute);
 App.use("/users", userRoute);
+App.use("/tasks", taskRoute);
+App.use("/projects", projectRoute);
+App.use("/teams", teamRoute);
 
 // Establishes a connection to a MongoDB database using Mongoose and starts the Express server
 mongoose

@@ -76,8 +76,11 @@ const UserController = {
     try {
       // Retrieve all users from the database
       let result = await UserModel.find();
-
-      res.status(200).send(SendResponse(true, "", result));
+      if (!result) {
+        res.status(404).send(SendResponse(false, "Data Not Found", result));
+      } else {
+        res.status(200).send(SendResponse(true, "", result));
+      }
     } catch (e) {
       res.status(500).send(SendResponse(false, "Internal Server Error", e));
     }

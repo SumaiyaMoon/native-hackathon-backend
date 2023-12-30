@@ -6,11 +6,11 @@ const jwt = require("jsonwebtoken");
 const AuthController = {
   signUp: async (req, res) => {
     try {
-      let { userName, password, userContact, email } = req.body;
-      let obj = { userName, password, userContact, email };
+      let { username, password, email } = req.body;
+      let obj = { username, password, email };
       let errArr = [];
 
-      if (!obj.userName) {
+      if (!obj.username) {
         errArr.push("User Name is Required");
       }
       if (!obj.password) {
@@ -25,7 +25,7 @@ const AuthController = {
         return;
       }
 
-      let userExist = await UserModel.findOne({ userName: obj.userName });
+      let userExist = await UserModel.findOne({ username: obj.username });
 
       if (userExist) {
         res
@@ -50,9 +50,9 @@ const AuthController = {
   },
   login: async (req, res) => {
     try {
-      let { userName, password } = req.body;
-      let obj = { userName, password };
-      let existingUser = await UserModel.findOne({ userName: obj.userName });
+      let { username, password } = req.body;
+      let obj = { username, password };
+      let existingUser = await UserModel.findOne({ username: obj.username });
 
       if (existingUser) {
         let correctPassword = await bcrypt.compare(
@@ -82,9 +82,32 @@ const AuthController = {
       res.status(500).send(SendResponse(false, "Internal Server Error", error));
     }
   },
+  // protected: async (req, res, next) => {
+  //   // 'Bearer jdflsdlfsjhlkdfjslkdfjhshfdkjshfdkjshdfkshdfkj'
+  //   let token = req.headers.authorization?.split(" ")[1];
+  //   //token = req.headers.authorization.replace("Bearer " , "");
+  //   if (!token) {
+  //     res.status(401).send(SendResponse(false, "Unauthorized: Token Missing"));
+  //     return;
+  //   } else {
+  //     jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
+  //       if (err) {
+  //         res
+  //           .status(401)
+  //           .send(SendResponse(false, "Unauthorized: Invalid Token"));
+  //         return;
+  //       } else {
+  //         console.log(decoded);
+  //         res.status(200).send(SendResponse(true, "Decode", decoded._doc)); //checkAuth create hoga or ye check hoga.
+  //         next();
+  //         return;
+  //       }
+  //     });
+  //   }
+  // },
   protected: async (req, res, next) => {
-    // 'Bearer jdflsdlfsjhlkdfjslkdfjhshfdkjshfdkjshdfkshdfkj'
     let token = req.headers.authorization?.split(" ")[1];
+
     if (!token) {
       res.status(401).send(SendResponse(false, "Unauthorized: Token Missing"));
       return;
@@ -94,10 +117,11 @@ const AuthController = {
           res
             .status(401)
             .send(SendResponse(false, "Unauthorized: Invalid Token"));
-          return;
         } else {
-          next();
-          return;
+          console.log(decoded);
+          // You can store the decoded user information in the request object for later use
+          req.user = decoded._doc;
+          next(); // Call next to move on to the next middleware or route handler
         }
       });
     }
@@ -118,6 +142,7 @@ const AuthController = {
           return;
         } else {
           if (decoded._doc.role === "admin") {
+            res.status(200).send(SendResponse(true, "Decode", decoded._doc));
             next();
             return;
           } else {
